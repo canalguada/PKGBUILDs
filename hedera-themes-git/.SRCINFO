@@ -1,0 +1,17 @@
+pkgbase = hedera-themes-git
+	pkgdesc = A simple GUIkit(LnF) for Plasma 5.
+	pkgver = r74.091bdb6
+	pkgrel = 1
+	url = https://github.com/sixsixfive/Hedera
+	install = hedera-themes.install
+	arch = any
+	license = custom:CC-BY-SA-4.0
+	makedepends = git
+	depends = gtk-update-icon-cache
+	provides = hedera-themes
+	conflicts = hedera-themes
+	source = hedera-themes::git+https://github.com/sixsixfive/Hedera.git
+	sha256sums = SKIP
+
+pkgname = hedera-themes-git
+

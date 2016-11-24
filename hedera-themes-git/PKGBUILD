@@ -1,0 +1,68 @@
+# Maintainer: CanalGuada
+
+_pkgname=hedera-themes
+pkgname=${_pkgname}-git
+pkgver=r74.091bdb6
+pkgrel=1
+pkgdesc='A simple GUIkit(LnF) for Plasma 5.'
+arch=('any')
+url='https://github.com/sixsixfive/Hedera'
+license=('custom:CC-BY-SA-4.0')
+depends=('gtk-update-icon-cache')
+makedepends=('git')
+conflicts=('hedera-themes')
+provides=('hedera-themes')
+install="${_pkgname}.install"
+#_git_commit="c2b9446f22476b56169cf7f1d6dec8656dce805f"
+#if [ -n "${_git_commit}" ]; then
+  #source=("${_pkgname}.tar.gz::https://github.com/sixsixfive/Hedera/archive/${_git_commit}.tar.gz")
+  #sha256sums=('c9429f9ecf61372d753a3a3062399630788720dd326546dc8343f8b1826f2587')
+#else
+  #source=("$_pkgname::git+https://github.com/sixsixfive/Hedera.git")
+  #sha256sums=('SKIP')
+#fi
+source=("$_pkgname::git+https://github.com/sixsixfive/Hedera.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  #if [ -n "${_git_commit}" ]; then
+    #cd "Hedera-${_git_commit}"
+    #filedate=$(stat --printf="%y" COPYING | tr -d -c [[:alnum:]])
+    #echo ${filedate:0:14}
+  #else 
+    #cd "$_pkgname"
+    #printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  #fi
+  cd "$_pkgname"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+package() {
+  #if [ -n "${_git_commit}" ]; then
+    #cd "Hedera-${_git_commit}"
+  #else
+    #cd "$_pkgname"
+  #fi
+
+  cd "$_pkgname"
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$_pkgname/COPYING"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$_pkgname/LICENSE"
+  install -Dm644 readme.md "$pkgdir/usr/share/themes/Hedera/README"
+
+  # Plasma desktop theme, look and feel, color scheme
+  # Yakuake Skin, konsole scheme
+  cd  "Plasma"
+  for pathname in "plasma" "color-schemes" "yakuake" "konsole"; do
+      cp -dr --no-preserve=ownership "$pathname" "$pkgdir/usr/share/"
+  done
+  cd - 2>&1  >/dev/null
+
+  # Icon theme, qupzilla themes, GTK themes, Qterminal/Qtermwidget scheme
+  cd "Other"
+  for pathname in "qupzilla" "themes" "qtermwidget5"; do
+      cp -dr --no-preserve=ownership "$pathname" "$pkgdir/usr/share/"
+  done
+  cp -dr --no-preserve=ownership "icons" "$pkgdir/usr/share/" 
+}
+
+# vim: ts=2 sw=2 et:
