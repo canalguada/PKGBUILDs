@@ -1,4 +1,4 @@
-# Maintainer: CanalGuada <canalguada.spambox@free.fr>
+# Maintainer: CanalGuada
 # Contributor: Phillip Schichtel <phillip.public@schich.tel>
 _pkgname=adapta-gtk-theme
 pkgname=${_pkgname}-git
