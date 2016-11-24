@@ -1,0 +1,87 @@
+# Maintainer: CanalGuada <canalguada.spambox@free.fr>
+# Contributor: Phillip Schichtel <phillip.public@schich.tel>
+_pkgname=adapta-gtk-theme
+pkgname=${_pkgname}-git
+_gtk3_min='3.18'
+_gtk3_max='4.0'
+_theme_name=Adapta
+_gtk2_min='2.24.30'
+pkgver=3.89.1.32
+pkgrel=1
+pkgdesc="An adaptive Gtk+ theme based on Material Design Guidelines."
+arch=(any)
+url="https://github.com/adapta-project/${_pkgname}"
+license=('GPL2' 'CCPL')
+depends=("gtk2>=${_gtk2_min}"
+"gtk3>=${_gtk3_min}.9"
+"gtk3<=${_gtk3_max}.99"
+'gtk-engines>=2.21.0'
+'gtk-engine-murrine>=0.98.1'
+'cantarell-fonts')
+optdepends=('ttf-roboto: The recommended font'
+'noto-fonts: The recommended font for improved language support'
+"gnome-shell>=${_gtk3_min}.3: The GNOME Shell"
+"gnome-flashback>=${_gtk3_min}.2: The GNOME flashback shell"
+'budgie-desktop>=10.2.5: The Budgie desktop'
+'cinnamon>=2.8.6: The Cinnamon desktop'
+'xfdesktop>=4.12.2: The Xfce desktop'
+'marco-gtk3>=1.14.0: The mate desktop in its GTK3 version'
+'ldm: The LXDE display manager in its GTK2 version'
+'paper-icon-theme: A fitting icon theme'
+'gnome-tweak-tool: A graphical tool to tweak gnome settings'
+'adapta-backgrounds: The corresponding backgrounds project'
+"unity>=7.4.0: Ubuntu's Unity desktop")
+makedepends=('glib2>=2.48.0'
+'libxml2'
+#'ruby-bundler>=1.11.0'
+'sassc'
+'inkscape'
+'parallel')
+provides=('adapta-gtk-theme')
+conflicts=('adapta-gtk-theme')
+source=("${_pkgname}::git+${url}.git")
+sha256sums=('SKIP')
+
+#_bundle="ruby-bundle"
+
+#prepare() {
+	#cd "${pkgname}-${pkgver}"
+	#export BUNDLE_PATH="${srcdir}/${_bundle}"
+	#bundle install
+#}
+
+pkgver() {
+  cd "${_pkgname}"
+
+  git describe --tags | sed 's/-/.r/; s/-g/./'
+}
+
+build() {
+	#export BUNDLE_PATH="${srcdir}/${_bundle}"
+	#export PATH="${BUNDLE_PATH}/bin:${PATH}"
+	#cd "${pkgname}-${pkgver}"
+  cd "${_pkgname}"
+
+	./autogen.sh --enable-gtk_next \
+		--enable-chrome \
+		--enable-plank \
+		--enable-parallel \
+    --with-selection_color=#2196f3 \
+    --with-second_selection_color=#64b5f6 \
+    --with-accent_color=#4fc3f7 \
+    --with-suggestion_color=#03a9f4
+    # --with-selection_color        Primary color for 'selected-items' (Default: #00BCD4 = Cyan500) (#2196f3 = Blue500)
+    # --with-second_selection_color Primary color for 'select' effects (Default: #4DD0E1 = Cyan300) (#64b5f6 = Blue300)
+    # --with-accent_color           Secondary color for notifications and OSDs (Default: #4DB6AC = Teal300) (#4fc3f7 = LightBlue300)
+    # --with-suggestion_color       Secondary color for 'suggested' buttons (Default: #009688 = Teal500) (#03a9f4 = LightBlue500)
+    # --with-destruction_color      Tertiary color for 'destructive' buttons (Default: #FF5252 = RedA200)
+	make
+}
+
+package() {
+	#cd "${pkgname}-${pkgver}"
+  cd "${_pkgname}"
+	make DESTDIR="$pkgdir" install -j 2
+}
+
+# vim: ts=2 sw=2 et:
