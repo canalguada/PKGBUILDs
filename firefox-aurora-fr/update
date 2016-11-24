@@ -1,0 +1,189 @@
+#!/bin/bash - 
+#===============================================================================
+#
+#          FILE: update
+# 
+#         USAGE: update [flags]
+# 
+#   DESCRIPTION: Helps keeping package up to date.
+# 
+#       OPTIONS: -w, --watch
+#                -f, --force
+#                -h, --help
+#  REQUIREMENTS: wget, curl, getopt, pacman, repoctl
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: David GUADALUPE (canalguada), dguadal@free.fr
+#  ORGANIZATION: 
+#       CREATED: 03/11/2016 15:41:05
+#      REVISION:  ---
+#===============================================================================
+
+set -o nounset                              # Treat unset variables as an error
+
+_name=firefox
+_channel=aurora
+_language=fr
+_baseurl="http://ftp.mozilla.org/pub/firefox/nightly/latest-mozilla-aurora-l10n"
+
+_pkgname="${_name}-${_channel}"
+pkgname="${_name}-${_channel}-${_language}"
+
+usage () {
+	cat <<EOF
+
+Help keeping $pkgname package up to date.
+    - download source archive when required
+    - purge previous build and update PKGBUILD
+    - finally, update local repo with new build
+
+Usage :
+    $(basename $0) [flags]
+
+Flags:
+    -w, --watch         only print to stdout the sha512 hash sum
+                        and the name of required archive 
+    -f, --force         force download of the current archive
+
+    -h, --help          show this message
+EOF
+}
+
+remotechecksum () {
+    pattern="firefox-[0-9]{2}.0a2.${_language}.linux-$1"
+    #curname=$(find `dirname $0` | grep -E "./${pattern}.tar.bz2" | tail -n 1)
+
+    #if [ -n "$curname" ]; then
+        #curname=$(basename $curname)
+        #curname=${curname/tar.bz2/checksums}
+        #if ! wget  -q --spider "$_baseurl/$curname"; then
+            #curname=$(curl "${_baseurl}/" 2>&1 | \
+                #grep -o -E "${pattern}.checksums" | sort | tail -n 1)
+        #fi
+    #else
+        #curname=$(curl "${_baseurl}/" 2>&1 | \
+            #grep -o -E "${pattern}.checksums" | sort | tail -n 1)
+    #fi
+	curname=$(curl "${_baseurl}/" 2>&1 | \
+		grep -o -E "${pattern}.checksums" | sort | tail -n 1)
+
+    curl "${_baseurl}/$curname" 2>&1 | grep -e "sha512" | \
+        grep -e "${_language}.linux-$1.tar.bz2"
+}
+
+OPTS=$(getopt -o 'hfw' --long 'help,force,watch' -n "$(basename $0)" -- "$@")
+
+#if [ $? -ne 0 ]; then
+	#echo 'Terminating...' >&2
+	#exit 1
+#fi
+
+eval set -- "$OPTS"
+unset OPTS
+
+watch=0
+force=0
+
+while true; do
+    case "$1" in
+        '-h'|'--help')
+            usage
+            exit 0
+        ;;
+        '-f'|'--force')
+            force=1
+            shift
+            continue
+        ;;
+        '-w'|'--watch')
+            watch=1
+            shift
+            continue
+        ;;
+        '--')
+            shift
+            break
+        ;;
+        *)
+            echo 'Internal error!' >&2
+            exit 1
+        ;;
+    esac
+done
+
+#echo 'Remaining arguments:'
+#for arg; do
+	#echo "--> '$arg'"
+#done
+
+CARCH=${1:-`uname -m`}
+
+hashdata=$(remotechecksum "$CARCH")
+hashsum=$(cut -d' ' -f1 <<< $hashdata)
+filename=$(cut -d' ' -f4 <<< $hashdata)
+pattern=".${_language}.linux-${CARCH}.tar.bz2"
+milestone=$(cut -d'-' -f2 <<< ${filename%$pattern})
+
+#echo "Hashdata : $hashdata"
+#echo "Filename : $filename"
+#echo "Milestone : $milestone"
+#echo "Sha512sum : $hashsum"
+
+if [ "$watch" -eq "1" ]; then
+    awk '{ print $1 " " $4 }' <<< $hashdata
+    exit 0
+fi
+
+cd "$(dirname $0)"
+
+check () {
+	if [ -e ${filename} ]; then
+		# If there is no new build and package have been installed, abort
+		awk '{ print $1 " " $4 }' <<< $hashdata | sha512sum --status -c - && \
+            pacman -Q ${pkgname} >/dev/null 2>&1 && {
+			#echo " il n'y a rien à faire"
+			exit 0
+		}
+		rm -f ${filename}
+	fi
+}
+
+# Remove old source archive if required
+[ "$force" -eq "1" ] && rm -f ${filename} || check
+
+# Remove old builds in PKGBUILD directory
+find . -iname "${pkgname}-*-${CARCH}.pkg.tar.xz" -exec rm -f {} \;
+
+# Update PKGBUILD
+build=$(grep -e "^pkgver=" PKGBUILD | cut -d'.' -f3)
+sed -r "s/^pkgver=[0-9]{2}.0a2/pkgver=$milestone/g" PKGBUILD -i.$build PKGBUILD
+
+# Build package
+REPODIR=$HOME/builds/repo
+#REPONAME=cgrepo
+#_old_build=$(find "${REPODIR}/" -iname "${pkgname}-*-${CARCH}.pkg.tar.xz")
+PKGDEST=$REPODIR SRCDEST=. makepkg -sfc
+
+# Install package
+#cd "$REPODIR"
+#_pkg=$(ls ${pkgname}* | sort | tail -n 1)
+#sudo pacman -U $_pkg --needed --noconfirm
+#cd - 2>&1 >/dev/null
+
+# TODO : Update AUR
+makepkg --printsrcinfo > .SRCINFO
+#git add PKGBUILD .SRCINFO firefox-aurora.desktop firefox-aurora-safe.desktop firefox-aurora.install
+#git commit -m "${_milestone}"
+#git push
+
+# Update local repo
+#_new_build=$(find . -iname "${pkgname}-*-${CARCH}.pkg.tar.xz")
+#repo-remove -v -s "$REPODIR/$REPONAME.db.tar.gz" "$pkgname"
+#rm -f "$_old_build"
+#repo-add -v -s -n "$REPODIR/$REPONAME.db.tar.gz" "$REPODIR/$(basename _new_build)"
+build=$(grep -e "^pkgver=" PKGBUILD | cut -d'.' -f3)
+pkgrel=$(grep -e "^pkgrel=" PKGBUILD | cut -d'=' -f2)
+pkg="$REPODIR/${pkgname}-${milestone}.${build}-${pkgrel}-${CARCH}.pkg.tar.xz"
+[ -e "$pkg" ] && repoctl add "$pkg"
+
+# vim: set ai ts=4 sw=4 tw=79:

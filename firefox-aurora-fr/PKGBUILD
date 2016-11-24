@@ -1,0 +1,55 @@
+# Maintainer: CanalGuada <dguadal at free dot fr>
+# Contributor: Alex Talker <alextalker at opemailbox dot org>
+# Contributor: Agustin Ferrario "py_crash < agustin dot ferrario at hotmail dot com dot ar >
+# Contributor: Luis von Bernus <PaterSiul@gmail.com>
+# Contributors: L42y, aeosynth, Dan Serban, Kalipath
+
+_name=firefox
+_channel=aurora
+_language=fr
+_full_language=French
+_pkgname="${_name}-${_channel}"
+
+pkgname="${_name}-${_channel}-${_language}"
+pkgver=52.0a2.20161124004020
+pkgrel=1
+pkgdesc="Firefox Aurora channel - Nightly build - ${_full_language}"
+url="http://www.mozilla.org/en-US/${_name}/${_channel}/"
+arch=('i686' 'x86_64')
+license=('MPL' 'GPL' 'LGPL')
+depends=('gtk3' 'libxt' 'startup-notification' 'mime-types' 'dbus-glib'
+	 'alsa-lib' 'dbus-glib' 'libnotify' 'desktop-file-utils' 'hicolor-icon-theme'
+	 'libvpx' 'libevent' 'nss>=3.14.1' 'hunspell')
+provides=('firefox-aurora' "firefox-aurora-${_language}")
+conflicts=('firefox-aurora')
+install="${_pkgname}.install"
+
+_baseurl="http://ftp.mozilla.org/pub/firefox/nightly/latest-mozilla-aurora-l10n"
+_pattern=".${_language}.linux-${CARCH}.tar.bz2"
+_filename=$(curl "${_baseurl}/" 2>&1 | grep -e ${_pattern} | sort | tail -n 1 | cut -d\> -f3 | cut -d\< -f1)
+_milestone=$(echo ${_filename%$_pattern} |cut -d- -f2)
+_basename="${_name}-${_milestone}.${_language}.linux"
+_sha512sum=$(curl -vs ${_baseurl}/${_basename}-${CARCH}.checksums 2>&1 | grep .tar.bz2 | grep sha512 | cut -d\  -f1)
+
+source=("${_pkgname}.desktop" "${_pkgname}-safe.desktop" "${_baseurl}/${_basename}-${CARCH}.tar.bz2")
+
+sha512sums=('24d9e38692642d8b3f740ff2253bab7dcd1e07a13657aefe6e8c2530d8f683fcf9c0b014a221c6a0ec28debd79aff3d4f6e12926a2673844ecbbf7a416ae10fd'
+	'c198e27780b882f449a57cc2de31e0edb8964de8e7859a8d4146a45cd221853ea7c02db55778e50ca188c879c92e5fd5e226296b915d8b405a45adc41e5c87da'
+  ${_sha512sum})
+
+pkgver() {
+  cd "${_name}"
+  echo "$(cat platform.ini | grep Milestone | cut -d= -f2).$(cat platform.ini | grep BuildID | cut -d= -f2 )"
+}
+
+package() {
+  install -d "$pkgdir"/{usr/bin,opt}
+  mv "${_name}" "${pkgdir}/opt/${_pkgname}"
+  ln -s "/opt/${_pkgname}/${_name}" "${pkgdir}/usr/bin/${_pkgname}"
+  install -Dm644 "${_pkgname}.desktop" "${pkgdir}/usr/share/applications/${_pkgname}.desktop"
+  install -Dm644 "${_pkgname}-safe.desktop" "${pkgdir}/usr/share/applications/${_pkgname}-safe.desktop"
+  install -Dm644 "${pkgdir}/opt/${_pkgname}/browser/icons/mozicon128.png" \
+  		 "${pkgdir}/usr/share/pixmaps/${_pkgname}.png"
+}
+
+# vim: ts=2 sw=2 et:
