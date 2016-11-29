@@ -175,14 +175,19 @@ makepkg --printsrcinfo > .SRCINFO
 #git add PKGBUILD .SRCINFO firefox-aurora.desktop firefox-aurora-safe.desktop firefox-aurora.install
 #git commit -m "${_milestone}"
 #git push
+git status --porcelain | grep  firefox-aurora-fr | sed 's/ M firefox-aurora-fr\///g' | xargs -r git add
+
+build=$(grep -e "^pkgver=" PKGBUILD | cut -d'.' -f3)
+pkgrel=$(grep -e "^pkgrel=" PKGBUILD | cut -d'=' -f2)
+msg="Update 'firefox-aurora-fr' to ${milestone}.${build}-${pkgrel} version."
+git commit -m "$msg"
+git push
 
 # Update local repo
 #_new_build=$(find . -iname "${pkgname}-*-${CARCH}.pkg.tar.xz")
 #repo-remove -v -s "$REPODIR/$REPONAME.db.tar.gz" "$pkgname"
 #rm -f "$_old_build"
 #repo-add -v -s -n "$REPODIR/$REPONAME.db.tar.gz" "$REPODIR/$(basename _new_build)"
-build=$(grep -e "^pkgver=" PKGBUILD | cut -d'.' -f3)
-pkgrel=$(grep -e "^pkgrel=" PKGBUILD | cut -d'=' -f2)
 pkg="$REPODIR/${pkgname}-${milestone}.${build}-${pkgrel}-${CARCH}.pkg.tar.xz"
 [ -e "$pkg" ] && repoctl add "$pkg"
 
