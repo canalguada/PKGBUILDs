@@ -1,6 +1,6 @@
 pkgbase = firefox-aurora-fr
 	pkgdesc = Firefox Aurora channel - Nightly build - French
-	pkgver = 52.0a2.20161212004004
+	pkgver = 52.0a2.20161213004019
 	pkgrel = 1
 	url = http://www.mozilla.org/en-US/firefox/aurora/
 	install = firefox-aurora.install
@@ -31,7 +31,7 @@ pkgbase = firefox-aurora-fr
 	source = http://ftp.mozilla.org/pub/firefox/nightly/latest-mozilla-aurora-l10n/firefox-52.0a2.fr.linux-x86_64.tar.bz2
 	sha512sums = 24d9e38692642d8b3f740ff2253bab7dcd1e07a13657aefe6e8c2530d8f683fcf9c0b014a221c6a0ec28debd79aff3d4f6e12926a2673844ecbbf7a416ae10fd
 	sha512sums = c198e27780b882f449a57cc2de31e0edb8964de8e7859a8d4146a45cd221853ea7c02db55778e50ca188c879c92e5fd5e226296b915d8b405a45adc41e5c87da
-	sha512sums = 3f74f72635649125d35aa98cff43288ce8ef93a8d0621bfcd9b23f7471f62975e15f36b40b02b49b6cbd9ee609516fe926ac2c83293af00e70e055d15f534847
+	sha512sums = 04fb06155fbe326a8fd7824eae0b57c06f5ff76a2176b1a195daa010ba2b88f0328185eed3f0f2b8569f682716869afb49c2285772a59da8b01a76e55f7c23e0
 
 pkgname = firefox-aurora-fr
 
