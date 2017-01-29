@@ -11,7 +11,7 @@ _full_language=French
 _pkgname="${_name}-${_channel}"
 
 pkgname="${_name}-${_channel}-${_language}"
-pkgver=52.0a2.20170123004004
+pkgver=53.0a2.20170128084315
 pkgrel=1
 pkgdesc="Firefox Aurora channel - Nightly build - ${_full_language}"
 url="http://www.mozilla.org/en-US/${_name}/${_channel}/"
@@ -26,16 +26,17 @@ install="${_pkgname}.install"
 
 _baseurl="http://ftp.mozilla.org/pub/firefox/nightly/latest-mozilla-aurora-l10n"
 _pattern=".${_language}.linux-${CARCH}.tar.bz2"
-_filename=$(curl "${_baseurl}/" 2>&1 | grep -e ${_pattern} | sort | tail -n 1 | cut -d\> -f3 | cut -d\< -f1)
-_milestone=$(echo ${_filename%$_pattern} |cut -d- -f2)
+#_filename=$(curl "${_baseurl}/" 2>&1 | grep -e ${_pattern} | sort | tail -n 1 | cut -d\> -f3 | cut -d\< -f1)
+#_milestone=$(echo ${_filename%$_pattern} |cut -d- -f2)
+_milestone="53.0a2"
 _basename="${_name}-${_milestone}.${_language}.linux"
-_sha512sum=$(curl -vs ${_baseurl}/${_basename}-${CARCH}.checksums 2>&1 | grep .tar.bz2 | grep sha512 | cut -d\  -f1)
+#_sha512sum=$(curl -vs ${_baseurl}/${_basename}-${CARCH}.checksums 2>&1 | grep .tar.bz2 | grep sha512 | cut -d\  -f1)
 
 source=("${_pkgname}.desktop" "${_pkgname}-safe.desktop" "${_baseurl}/${_basename}-${CARCH}.tar.bz2")
 
 sha512sums=('24d9e38692642d8b3f740ff2253bab7dcd1e07a13657aefe6e8c2530d8f683fcf9c0b014a221c6a0ec28debd79aff3d4f6e12926a2673844ecbbf7a416ae10fd'
 	'c198e27780b882f449a57cc2de31e0edb8964de8e7859a8d4146a45cd221853ea7c02db55778e50ca188c879c92e5fd5e226296b915d8b405a45adc41e5c87da'
-  ${_sha512sum})
+  'SKIP')
 
 pkgver() {
   cd "${_name}"

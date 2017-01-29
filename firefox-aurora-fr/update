@@ -49,28 +49,6 @@ Flags:
 EOF
 }
 
-remotechecksum () {
-    pattern="firefox-[0-9]{2}.0a2.${_language}.linux-$1"
-    #curname=$(find `dirname $0` | grep -E "./${pattern}.tar.bz2" | tail -n 1)
-
-    #if [ -n "$curname" ]; then
-        #curname=$(basename $curname)
-        #curname=${curname/tar.bz2/checksums}
-        #if ! wget  -q --spider "$_baseurl/$curname"; then
-            #curname=$(curl "${_baseurl}/" 2>&1 | \
-                #grep -o -E "${pattern}.checksums" | sort | tail -n 1)
-        #fi
-    #else
-        #curname=$(curl "${_baseurl}/" 2>&1 | \
-            #grep -o -E "${pattern}.checksums" | sort | tail -n 1)
-    #fi
-	curname=$(curl "${_baseurl}/" 2>&1 | \
-		grep -o -E "${pattern}.checksums" | sort | tail -n 1)
-
-    curl "${_baseurl}/$curname" 2>&1 | grep -e "sha512" | \
-        grep -e "${_language}.linux-$1.tar.bz2"
-}
-
 OPTS=$(getopt -o 'hfw' --long 'help,force,watch' -n "$(basename $0)" -- "$@")
 
 #if [ $? -ne 0 ]; then
@@ -118,25 +96,55 @@ done
 
 CARCH=${1:-`uname -m`}
 
-hashdata=$(remotechecksum "$CARCH")
+remotesha512sum () {
+    pattern="firefox-[0-9]{2}.0a2.${_language}.linux-$1"
+	curname=$(curl "${_baseurl}/" 2>&1 | \
+		grep -o -E "${pattern}.checksums" | tail -n 1)
+
+    curl "${_baseurl}/$curname" 2>&1 | grep -e "sha512" | \
+        grep -e "${_language}.linux-$1.tar.bz2"
+}
+
+hashdata=$(remotesha512sum "$CARCH")
 hashsum=$(cut -d' ' -f1 <<< $hashdata)
 filename=$(cut -d' ' -f4 <<< $hashdata)
+#echo "Hashdata : $hashdata"
+#echo "Sha512sum : $hashsum"
+
+fetch_table() {
+	pattern="${_language}.linux-${CARCH}.tar.bz2"
+	echo "<table>"
+	#cat ./ftp-directory | \
+	curl "${_baseurl}/" 2>&1 | \
+		xmllint --format --html --xpath '//body//table/*[contains(.,"'$pattern'") and not(contains(.,"tar.bz2.asc"))]' -
+	echo "</table>"
+}
+remotetimestamp() {
+	fetch_table 2>/dev/null | \
+		xmlstarlet sel -t -m '//table/tr' -v '*[position()=2]' -o $'\t' -v '*[position()=4]' -n - | \
+		sort | tail -n 1
+}
+remote=$(remotetimestamp)
+timestamp=$(cut -f2 <<< $remote)
+filename=$(cut -f1 <<< $remote)
+echo "Remote : $remote"
+echo "Timestamp : $timestamp"
+
 pattern=".${_language}.linux-${CARCH}.tar.bz2"
 milestone=$(cut -d'-' -f2 <<< ${filename%$pattern})
 
-#echo "Hashdata : $hashdata"
-#echo "Filename : $filename"
-#echo "Milestone : $milestone"
-#echo "Sha512sum : $hashsum"
+echo "Filename : $filename"
+echo "Milestone : $milestone"
 
 if [ "$watch" -eq "1" ]; then
-    awk '{ print $1 " " $4 }' <<< $hashdata
+    #awk '{ print $1 " " $4 }' <<< $hashdata
+	echo $remote
     exit 0
 fi
 
 cd "$(dirname $0)"
 
-check () {
+check_sha512sum () {
 	if [ -e ${filename} ]; then
 		# If there is no new build and package have been installed, abort
 		awk '{ print $1 " " $4 }' <<< $hashdata | sha512sum --status -c - && \
@@ -148,15 +156,36 @@ check () {
 	fi
 }
 
+force_download() {
+	find . -iname "*${pattern}" -exec rm -f {} \;
+	curl -O "${_baseurl}/${filename}"
+	sha512sum $filename > "checksum"
+	echo $timestamp > "timestamp"
+}
+check_timestamp() {
+	if [ -e ${filename} ]; then
+		# If there is no new build and package have been installed, abort
+		old=$(cat "timestamp")
+		[ "$old" == "$timestamp" ] && \
+            pacman -Q ${pkgname} >/dev/null 2>&1 && {
+			#echo " il n'y a rien à faire"
+			exit 0
+		}
+		rm -f ${filename}
+	fi
+}
+
 # Remove old source archive if required
-[ "$force" -eq "1" ] && rm -f ${filename} || check
+#[ "$force" -eq "1" ] && rm -f ${filename} || check_sha512sum
+[ "$force" -eq "1" ] && force_download || check_timestamp
 
 # Remove old builds in PKGBUILD directory
 find . -iname "${pkgname}-*-${CARCH}.pkg.tar.xz" -exec rm -f {} \;
 
 # Update PKGBUILD
 build=$(grep -e "^pkgver=" PKGBUILD | cut -d'.' -f3)
-sed -r "s/^pkgver=[0-9]{2}.0a2/pkgver=$milestone/g" PKGBUILD -i.$build PKGBUILD
+#sed -r "s/^pkgver=[0-9]{2}.0a2/pkgver=$milestone/g" PKGBUILD -i.$build PKGBUILD
+sed -r "s/^_milestone=\"[0-9]{2}.0a2\"/_milestone=\"$milestone\"/g" PKGBUILD -i.$build PKGBUILD
 
 # Build package
 REPODIR=$HOME/builds/repo
