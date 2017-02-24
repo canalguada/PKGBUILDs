@@ -11,7 +11,7 @@ _full_language=French
 _pkgname="${_name}-${_channel}"
 
 pkgname="${_name}-${_channel}-${_language}"
-pkgver=53.0a2.20170224084106
+pkgver=53.0a2.20170223084136
 pkgrel=1
 pkgdesc="Firefox Aurora channel - Nightly build - ${_full_language}"
 url="http://www.mozilla.org/en-US/${_name}/${_channel}/"
