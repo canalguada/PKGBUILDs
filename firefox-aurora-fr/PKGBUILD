@@ -11,7 +11,7 @@ _full_language=French
 _pkgname="${_name}-${_channel}"
 
 pkgname="${_name}-${_channel}-${_language}"
-pkgver=53.0a2.20170223084136
+pkgver=53.0a2.20170224084106
 pkgrel=1
 pkgdesc="Firefox Aurora channel - Nightly build - ${_full_language}"
 url="http://www.mozilla.org/en-US/${_name}/${_channel}/"
@@ -28,7 +28,7 @@ _baseurl="http://ftp.mozilla.org/pub/firefox/nightly/latest-mozilla-aurora-l10n"
 _pattern=".${_language}.linux-${CARCH}.tar.bz2"
 #_filename=$(curl "${_baseurl}/" 2>&1 | grep -e ${_pattern} | sort | tail -n 1 | cut -d\> -f3 | cut -d\< -f1)
 #_milestone=$(echo ${_filename%$_pattern} |cut -d- -f2)
-_milestone=""
+_milestone="53.0a2"
 _basename="${_name}-${_milestone}.${_language}.linux"
 #_sha512sum=$(curl -vs ${_baseurl}/${_basename}-${CARCH}.checksums 2>&1 | grep .tar.bz2 | grep sha512 | cut -d\  -f1)
 
