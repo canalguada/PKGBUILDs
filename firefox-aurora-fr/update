@@ -185,7 +185,8 @@ find . -iname "${pkgname}-*-${CARCH}.pkg.tar.xz" -exec rm -f {} \;
 # Update PKGBUILD
 build=$(grep -e "^pkgver=" PKGBUILD | cut -d'.' -f3)
 #sed -r "s/^pkgver=[0-9]{2}.0a2/pkgver=$milestone/g" PKGBUILD -i.$build PKGBUILD
-sed -r "s/^_milestone=\".*\"/_milestone=\"$milestone\"/g" PKGBUILD -i.$build PKGBUILD
+#sed -r "s/^_milestone=\".*\"/_milestone=\"$milestone\"/g" PKGBUILD -i.$build PKGBUILD
+sed -i -r "s/^_milestone=\".*\"/_milestone=\"$milestone\"/g" PKGBUILD
 
 # Build package
 REPODIR=$HOME/builds/repo
