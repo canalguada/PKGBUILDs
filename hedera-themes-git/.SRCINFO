@@ -1,6 +1,6 @@
 pkgbase = hedera-themes-git
 	pkgdesc = A simple GUIkit(LnF) for Plasma 5.
-	pkgver = r1.487359f3
+	pkgver = r74.091bdb6
 	pkgrel = 1
 	url = https://github.com/sixsixfive/Hedera
 	install = hedera-themes.install
