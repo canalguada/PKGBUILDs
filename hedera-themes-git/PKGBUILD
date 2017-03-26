@@ -2,7 +2,7 @@
 
 _pkgname=hedera-themes
 pkgname=${_pkgname}-git
-pkgver=r74.091bdb6
+pkgver=r1.487359f3
 pkgrel=1
 pkgdesc='A simple GUIkit(LnF) for Plasma 5.'
 arch=('any')
@@ -49,20 +49,14 @@ package() {
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$_pkgname/LICENSE"
   install -Dm644 readme.md "$pkgdir/usr/share/themes/Hedera/README"
 
-  # Plasma desktop theme, look and feel, color scheme
-  # Yakuake Skin, konsole scheme
-  cd  "Plasma"
-  for pathname in "plasma" "color-schemes" "yakuake" "konsole"; do
-      cp -dr --no-preserve=ownership "$pathname" "$pkgdir/usr/share/"
-  done
-  cd - 2>&1  >/dev/null
+  cp -dr --no-preserve=ownership THEME/* "$pkgdir/usr/share/"
 
-  # Icon theme, qupzilla themes, GTK themes, Qterminal/Qtermwidget scheme
-  cd "Other"
-  for pathname in "qupzilla" "themes" "qtermwidget5"; do
-      cp -dr --no-preserve=ownership "$pathname" "$pkgdir/usr/share/"
-  done
-  cp -dr --no-preserve=ownership "icons" "$pkgdir/usr/share/" 
+  sh "$pkgdir/usr/share/icons/Hedera/config.sh" -i
+  
+  mkdir -p "$pkgdir/usr/share/kf5"
+  mkdir -p "$pkgdir/usr/share/kde4/apps/kdeui"
+  cp -dr --no-preserve=ownership MANUAL/kf5/infopage "$pkgdir/usr/share/kf5/infopage.hedera"
+  cp -dr --no-preserve=ownership MANUAL/kf5/infopage "$pkgdir/usr/share/kde4/apps/kdeui/about.hedera"
 }
 
 # vim: ts=2 sw=2 et:

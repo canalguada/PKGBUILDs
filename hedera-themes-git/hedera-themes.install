@@ -1,6 +1,7 @@
 post_install() {
     #update-desktop-database -q
     gtk-update-icon-cache -q -t -f usr/share/icons/Hedera
+    gtk-update-icon-cache -q -t -f usr/share/icons/HederaQt
     #repo_info
 }
 
