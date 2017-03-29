@@ -171,6 +171,7 @@ check_timestamp() {
 			#echo " il n'y a rien à faire"
 			exit 0
 		}
+		echo $timestamp > "timestamp"
 		rm -f ${filename}
 	fi
 }
